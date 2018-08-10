@@ -1,9 +1,10 @@
 # PRP-DGPS
 
 ## Directory
-.
-+-- Assets
-|   +-- Sccripts
-    |   +-- camera
-    |   +-- metastore
-    |   +-- trigger
+"""
+│ Assets
+└─── Sccripts
+    └─── camera
+    └─── metastore
+    └─── trigger
+"""
