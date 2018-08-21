@@ -1,7 +1,7 @@
 # PRP-DGPS
 
 - $GPGSV
-"""
+```
 GSV message fields
 Field Meaning
 0 Message ID $GPGSV
@@ -16,5 +16,4 @@ Field Meaning
 12-15 Information about third SV, same format as fields 4 through 7
 16-19 Information about fourth SV, same format as fields 4 through 7
 20 The checksum data, always begins with *
-"""
-
+```
