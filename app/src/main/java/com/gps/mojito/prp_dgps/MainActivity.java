@@ -8,6 +8,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -17,7 +18,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.nio.channels.FileChannel;
 import java.util.Iterator;
+
+import com.gps.mojito.database.DatabaseHelper;
 
 public class MainActivity extends AppCompatActivity {
     private LocationManager locationManager=null;
@@ -28,8 +36,10 @@ public class MainActivity extends AppCompatActivity {
     private TextView txtGPS_Quality = null;
     private TextView txtGPS_Location = null;
     private TextView txtGPS_Satellites = null;
-    //
     private Handler mHandler = null;
+
+    // Database
+    private DatabaseHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,29 +56,19 @@ public class MainActivity extends AppCompatActivity {
         locationManager=(LocationManager)getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, locationListener);
         locationManager.addNmeaListener(nmeaListener);
-        //
-        //
 
-
-
+        db = new DatabaseHelper(this);
     }
 
 
     @Override
     protected void onDestroy() {
+        // SaveDatabase();
         // TODO Auto-generated method stub
         super.onDestroy();
         locationManager.removeUpdates(locationListener);
         locationManager.removeNmeaListener(nmeaListener);
     }
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.main, menu);
-//        return true;
-//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -131,7 +131,8 @@ public class MainActivity extends AppCompatActivity {
                 //check nmea's checksum
                 if (isValidForNmea(nmea)){
                     nmeaProgress(nmea);
-                    Log.d("GPS-NMEA", nmea);
+                    Log.d("GPS-NMEA", nmea + "!!!");
+                    db.insertNote(nmea);
                 }
 
             }
@@ -267,4 +268,6 @@ public class MainActivity extends AppCompatActivity {
         }
         return valid;
     }
+
+
 }
