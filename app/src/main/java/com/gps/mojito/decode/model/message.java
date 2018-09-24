@@ -9,11 +9,6 @@ public class message {
 
   public String[] split() {
     String[] splitData = msg.split(",");
-    String debug = "";
-    for (String Data : splitData) {
-      debug += String.format("[%s]", Data);
-    }
-    Log.d("MSG", debug);
 
     return splitData;
   }
@@ -21,11 +16,6 @@ public class message {
   public String[] split(String msg) {
     this.msg = msg;
     String[] splitData = msg.split(",");
-    String debug = "";
-    for (String Data : splitData) {
-      debug += String.format("[%s]", Data);
-    }
-    Log.d("MSG", debug);
 
     return splitData;
   }

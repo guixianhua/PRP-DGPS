@@ -20,14 +20,21 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import com.gps.mojito.database.DBHelper;
 import com.gps.mojito.decode.model.message;
@@ -42,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
   private TextView txtGPS_Location = null;
   private TextView txtGPS_Satellites = null;
   private Handler mHandler = null;
+  private ListView listView = null;
 
   private static final int REQUEST_EXTERNAL_STORAGE = 1;
   private static String[] PERMISSIONS_STORAGE = {
@@ -61,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
     txtGPS_Quality = (TextView) findViewById(R.id.textGPS_Quality);
     txtGPS_Location = (TextView) findViewById(R.id.textGPS_Location);
     txtGPS_Satellites = (TextView) findViewById(R.id.textGPS_Satellites);
+    listView = (ListView) findViewById(R.id.log_list);
     registerHandler();
     registerListener();
     locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -68,6 +77,16 @@ public class MainActivity extends AppCompatActivity {
     locationManager.addNmeaListener(nmeaListener);
 
     helper = new DBHelper(MainActivity.this);
+    try {
+      Runtime.getRuntime().exec("logcat -f "
+          + Environment.getExternalStorageDirectory().getAbsolutePath()
+          + "/PRP-DGPS.txt");
+    }
+    catch (Exception e) {
+      Log.d("LOG", e.getMessage());
+    }
+    ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, Txt());
+    listView.setAdapter(adapter);
   }
 
 
@@ -299,5 +318,73 @@ public class MainActivity extends AppCompatActivity {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  private static String getLogcatInfo(){
+    String strLogcatInfo = "";
+    try{
+      ArrayList<String> commandLine = new ArrayList<String>();
+      commandLine.add("logcat");
+      commandLine.add( "-d");
+
+      commandLine.add("*:E"); // 过滤所有的错误信息
+
+      ArrayList<String> clearLog = new ArrayList<String>();  //设置命令  logcat -c 清除日志
+      clearLog.add("logcat");
+      clearLog.add("-c");
+
+      Process process = Runtime.getRuntime().exec(commandLine.toArray(new String[commandLine.size()]));
+      BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(process.getInputStream()));
+
+      String line = null;
+      while ((line = bufferedReader.readLine()) != null) {
+        Runtime.getRuntime().exec(clearLog.toArray(new String[clearLog.size()]));
+        strLogcatInfo = strLogcatInfo + line + "\n";
+      }
+
+      bufferedReader.close();
+    }
+    catch(Exception ex)
+    {
+      Log.e("LOG", ex.getMessage());
+    }
+    return strLogcatInfo;
+  }
+
+  public List<String> Txt() {
+    String filePath = Environment.getExternalStorageDirectory().getAbsolutePath()
+        + "/PRP-DGPS.txt";
+
+    List newList=new ArrayList<String>();
+    try {
+      File file = new File(filePath);
+      int count = 0;
+      if (file.isFile() && file.exists()) {
+        InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
+        BufferedReader br = new BufferedReader(isr);
+        String lineTxt = null;
+        while ((lineTxt = br.readLine()) != null) {
+          if (!"".equals(lineTxt)) {
+            String[] reds = lineTxt.split(" ");
+            String msg = "";
+            int time = 0;
+            for (String txt: reds) {
+              if (time >= 4)
+                msg = msg + txt + " ";
+              time++;
+            }
+            newList.add(count, msg);
+            count++;
+          }
+        }
+        isr.close();
+        br.close();
+      }else {
+        Log.e("tag", "can not find file");
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return newList;
   }
 }
