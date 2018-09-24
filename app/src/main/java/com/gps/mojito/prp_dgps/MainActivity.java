@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -59,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
   // Database
   private DBHelper helper;
 
+  private boolean run = false;
+  private final Handler handler = new Handler();
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -81,13 +85,28 @@ public class MainActivity extends AppCompatActivity {
       Runtime.getRuntime().exec("logcat -f "
           + Environment.getExternalStorageDirectory().getAbsolutePath()
           + "/PRP-DGPS.txt");
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Log.d("LOG", e.getMessage());
     }
-    ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, Txt());
-    listView.setAdapter(adapter);
+    run = true;
+    handler.postDelayed(task, 1000);
   }
+
+  private final Runnable task = new Runnable() {
+    @Override
+    public void run() {
+      // TODO Auto-generated method stub
+      if (run) {
+        List<String> logList = Txt();
+        Collections.reverse(logList);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this,
+            R.layout.support_simple_spinner_dropdown_item, logList);
+        listView.setAdapter(adapter);
+        handler.postDelayed(this, 1000);
+      }
+    }
+  };
+
 
 
   @Override
@@ -368,8 +387,13 @@ public class MainActivity extends AppCompatActivity {
             String[] reds = lineTxt.split(" ");
             String msg = "";
             int time = 0;
+            Boolean flag = false;
             for (String txt: reds) {
-              if (time >= 4)
+              if (txt.contains("E") || txt.contains("D") || txt.contains("E")) {
+                flag = true;
+              }
+
+              if (flag)
                 msg = msg + txt + " ";
               time++;
             }
@@ -385,6 +409,8 @@ public class MainActivity extends AppCompatActivity {
     } catch (Exception e) {
       e.printStackTrace();
     }
-    return newList;
+    if (newList.size()-10 > 0)
+      return newList.subList(newList.size()-10, newList.size());
+    return newList.subList(0, newList.size());
   }
 }
