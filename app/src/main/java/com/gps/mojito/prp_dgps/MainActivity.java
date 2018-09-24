@@ -1,6 +1,9 @@
 package com.gps.mojito.prp_dgps;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.location.Criteria;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
@@ -11,6 +14,7 @@ import android.location.LocationProvider;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,168 +29,181 @@ import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.util.Iterator;
 
-import com.gps.mojito.database.DatabaseHelper;
+import com.gps.mojito.database.DBHelper;
+import com.gps.mojito.decode.model.message;
 
 public class MainActivity extends AppCompatActivity {
-    private LocationManager locationManager=null;
-    private Criteria criteria=null;
-    private LocationListener locationListener = null;
-    private GpsStatus.NmeaListener nmeaListener = null;
-    private GpsStatus.Listener gpsStatusListener = null;
-    private TextView txtGPS_Quality = null;
-    private TextView txtGPS_Location = null;
-    private TextView txtGPS_Satellites = null;
-    private Handler mHandler = null;
+  private LocationManager locationManager = null;
+  private Criteria criteria = null;
+  private LocationListener locationListener = null;
+  private GpsStatus.NmeaListener nmeaListener = null;
+  private GpsStatus.Listener gpsStatusListener = null;
+  private TextView txtGPS_Quality = null;
+  private TextView txtGPS_Location = null;
+  private TextView txtGPS_Satellites = null;
+  private Handler mHandler = null;
 
-    // Database
-    private DatabaseHelper db;
+  private static final int REQUEST_EXTERNAL_STORAGE = 1;
+  private static String[] PERMISSIONS_STORAGE = {
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE" };
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+  // Database
+  private DBHelper helper;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+    // verifyStoragePermissions();
+
+    //
+    txtGPS_Quality = (TextView) findViewById(R.id.textGPS_Quality);
+    txtGPS_Location = (TextView) findViewById(R.id.textGPS_Location);
+    txtGPS_Satellites = (TextView) findViewById(R.id.textGPS_Satellites);
+    registerHandler();
+    registerListener();
+    locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, locationListener);
+    locationManager.addNmeaListener(nmeaListener);
+
+    helper = new DBHelper(MainActivity.this);
+  }
 
 
-        //
-        txtGPS_Quality = (TextView) findViewById(R.id.textGPS_Quality);
-        txtGPS_Location = (TextView) findViewById(R.id.textGPS_Location);
-        txtGPS_Satellites = (TextView) findViewById(R.id.textGPS_Satellites);
-        registerHandler();
-        registerListener();
-        locationManager=(LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, locationListener);
-        locationManager.addNmeaListener(nmeaListener);
+  @Override
+  protected void onDestroy() {
+    Log.d("MAIN", "QUIT");
+    // SaveDatabase();
+    // TODO Auto-generated method stub
 
-        db = new DatabaseHelper(this);
-    }
+    super.onDestroy();
+    locationManager.removeUpdates(locationListener);
+    locationManager.removeNmeaListener(nmeaListener);
+  }
 
+  @Override
+  public void finish() {
 
-    @Override
-    protected void onDestroy() {
-        // SaveDatabase();
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    // Handle action bar item clicks here. The action bar will
+    // automatically handle clicks on the Home/Up button, so long
+    // as you specify a parent activity in AndroidManifest.xml.
+    int id = item.getItemId();
+    //if (id == R.id.action_settings) {
+    //	return true;
+    //}
+    return super.onOptionsItemSelected(item);
+  }
+
+  private void registerListener() {
+    locationListener = new LocationListener() {
+
+      @Override
+      public void onLocationChanged(Location loc) {
         // TODO Auto-generated method stub
-        super.onDestroy();
-        locationManager.removeUpdates(locationListener);
-        locationManager.removeNmeaListener(nmeaListener);
-    }
+        //定位資料更新時會回呼
+        Log.d("GPS-NMEA", loc.getLatitude() + "," + loc.getLongitude());
+      }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        //if (id == R.id.action_settings) {
-        //	return true;
-        //}
-        return super.onOptionsItemSelected(item);
-    }
+      @Override
+      public void onProviderDisabled(String provider) {
+        // TODO Auto-generated method stub
+        //定位提供者如果關閉時會回呼，並將關閉的提供者傳至provider字串中
+      }
 
-    private void registerListener(){
-        locationListener=new LocationListener(){
+      @Override
+      public void onProviderEnabled(String provider) {
+        // TODO Auto-generated method stub
+        //定位提供者如果開啟時會回呼，並將開啟的提供者傳至provider字串中
+      }
 
-            @Override
-            public void onLocationChanged(Location loc) {
-                // TODO Auto-generated method stub
-                //定位資料更新時會回呼
-                Log.d("GPS-NMEA", loc.getLatitude() + "," +  loc.getLongitude());
-            }
+      @Override
+      public void onStatusChanged(String provider, int status, Bundle extras) {
+        // TODO Auto-generated method stub
+        Log.d("GPS-NMEA", provider + "");
+        //GPS狀態提供，這只有提供者為gps時才會動作
+        switch (status) {
+          case LocationProvider.OUT_OF_SERVICE:
+            Log.d("GPS-NMEA", "OUT_OF_SERVICE");
+            break;
+          case LocationProvider.TEMPORARILY_UNAVAILABLE:
+            Log.d("GPS-NMEA", " TEMPORARILY_UNAVAILABLE");
+            break;
+          case LocationProvider.AVAILABLE:
+            Log.d("GPS-NMEA", "" + provider + "");
 
-            @Override
-            public void onProviderDisabled(String provider) {
-                // TODO Auto-generated method stub
-                //定位提供者如果關閉時會回呼，並將關閉的提供者傳至provider字串中
-            }
+            break;
+        }
 
-            @Override
-            public void onProviderEnabled(String provider) {
-                // TODO Auto-generated method stub
-                //定位提供者如果開啟時會回呼，並將開啟的提供者傳至provider字串中
-            }
+      }
 
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-                // TODO Auto-generated method stub
-                Log.d("GPS-NMEA", provider + "");
-                //GPS狀態提供，這只有提供者為gps時才會動作
-                switch (status) {
-                    case LocationProvider.OUT_OF_SERVICE:
-                        Log.d("GPS-NMEA","OUT_OF_SERVICE");
-                        break;
-                    case LocationProvider.TEMPORARILY_UNAVAILABLE:
-                        Log.d("GPS-NMEA"," TEMPORARILY_UNAVAILABLE");
-                        break;
-                    case LocationProvider.AVAILABLE:
-                        Log.d("GPS-NMEA","" + provider + "");
-
-                        break;
-                }
-
-            }
-
-        };
+    };
 //
-        nmeaListener = new GpsStatus.NmeaListener() {
-            public void onNmeaReceived(long timestamp, String nmea) {
-                //check nmea's checksum
-                if (isValidForNmea(nmea)){
-                    nmeaProgress(nmea);
-                    Log.d("GPS-NMEA", nmea);
-                    db.insertNote(nmea);
-                }
+    nmeaListener = new GpsStatus.NmeaListener() {
+      public void onNmeaReceived(long timestamp, String nmea) {
+        //check nmea's checksum
+        if (isValidForNmea(nmea)) {
+          nmeaProgress(nmea);
+          Log.d("GPS-NMEA", nmea);
+          helper.insert(nmea);
+          message tmp = new message(nmea);
+          tmp.split();
+        }
 
-            }
-        };
+      }
+    };
 //
-        gpsStatusListener = new GpsStatus.Listener(){
-            public void onGpsStatusChanged(int event) {
-                // TODO Auto-generated method stub
-                GpsStatus gpsStatus;
-                gpsStatus= locationManager.getGpsStatus(null);
+    gpsStatusListener = new GpsStatus.Listener() {
+      public void onGpsStatusChanged(int event) {
+        // TODO Auto-generated method stub
+        GpsStatus gpsStatus;
+        gpsStatus = locationManager.getGpsStatus(null);
 
-                switch(event)
-                {
-                    case GpsStatus.GPS_EVENT_FIRST_FIX:
-                        //
-                        gpsStatus.getTimeToFirstFix();
-                        Log.d("GPS-NMEA","GPS_EVENT_FIRST_FIX");
-                        break;
-                    case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
+        switch (event) {
+          case GpsStatus.GPS_EVENT_FIRST_FIX:
+            //
+            gpsStatus.getTimeToFirstFix();
+            Log.d("GPS-NMEA", "GPS_EVENT_FIRST_FIX");
+            break;
+          case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
 
-                        Iterable<GpsSatellite> allSatellites = gpsStatus.getSatellites();
-                        Iterator<GpsSatellite> it=allSatellites.iterator();
+            Iterable<GpsSatellite> allSatellites = gpsStatus.getSatellites();
+            Iterator<GpsSatellite> it = allSatellites.iterator();
 
-                        int count = 0;
-                        while(it.hasNext())
-                        {
-                            GpsSatellite gsl=(GpsSatellite)it.next();
+            int count = 0;
+            while (it.hasNext()) {
+              GpsSatellite gsl = (GpsSatellite) it.next();
 
-                            if (gsl.getSnr()>0.0){
-                                count++;
-                            }
+              if (gsl.getSnr() > 0.0) {
+                count++;
+              }
 
-                        }
-
-
-                        break;
-                    case GpsStatus.GPS_EVENT_STARTED:
-                        //Event sent when the GPS system has started.
-                        Log.d("GPS-NMEA","GPS_EVENT_STARTED");
-                        break;
-                    case GpsStatus.GPS_EVENT_STOPPED:
-                        //Event sent when the GPS system has stopped.
-                        Log.d("GPS-NMEA","GPS_EVENT_STOPPED");
-                        break;
-                    default :
-                        break;
-                }
             }
 
-        };
 
-    }
+            break;
+          case GpsStatus.GPS_EVENT_STARTED:
+            //Event sent when the GPS system has started.
+            Log.d("GPS-NMEA", "GPS_EVENT_STARTED");
+            break;
+          case GpsStatus.GPS_EVENT_STOPPED:
+            //Event sent when the GPS system has stopped.
+            Log.d("GPS-NMEA", "GPS_EVENT_STOPPED");
+            break;
+          default:
+            break;
+        }
+      }
 
-    private void registerHandler(){
+    };
+
+  }
+
+  private void registerHandler() {
 	/*
 	GGA Global Positioning System Fix Data. Time, Position and fix related data for a GPS receiver
 	11
@@ -213,61 +230,74 @@ public class MainActivity extends AppCompatActivity {
 	14) Differential reference station ID, 0000-1023
 	15) Checksum
 		 */
-        mHandler = new Handler() {
-            public void handleMessage(Message msg) {
+    mHandler = new Handler() {
+      public void handleMessage(Message msg) {
 
-                String str = (String) msg.obj;
-                String[] rawNmeaSplit = str.split(",");
-                txtGPS_Quality.setText(rawNmeaSplit[6]);
-                txtGPS_Location.setText(rawNmeaSplit[2] + " " + rawNmeaSplit[3] + "," + rawNmeaSplit[4] + " " + rawNmeaSplit[5]);
-                txtGPS_Satellites.setText(rawNmeaSplit[7]);
+        String str = (String) msg.obj;
+        String[] rawNmeaSplit = str.split(",");
+        txtGPS_Quality.setText(rawNmeaSplit[6]);
+        txtGPS_Location.setText(rawNmeaSplit[2] + " " + rawNmeaSplit[3] + "," + rawNmeaSplit[4] + " " + rawNmeaSplit[5]);
+        txtGPS_Satellites.setText(rawNmeaSplit[7]);
 
-            }
-        };
+      }
+    };
 
 
-    }
-    //custom
+  }
+
+  //custom
 //取得nmea資料的callback
-    private void nmeaProgress(String rawNmea){
+  private void nmeaProgress(String rawNmea) {
 
-        String[] rawNmeaSplit = rawNmea.split(",");
+    String[] rawNmeaSplit = rawNmea.split(",");
 
-        if (rawNmeaSplit[0].equalsIgnoreCase("$GPGGA")){
-            //send GGA nmea data to handler
-            Message msg = new Message();
-            msg.obj = rawNmea;
-            mHandler.sendMessage(msg);
-        }
-
+    if (rawNmeaSplit[0].equalsIgnoreCase("$GPGGA")) {
+      //send GGA nmea data to handler
+      Message msg = new Message();
+      msg.obj = rawNmea;
+      mHandler.sendMessage(msg);
     }
 
+  }
 
-    private boolean isValidForNmea(String rawNmea){
-        boolean valid = true;
-        byte[] bytes = rawNmea.getBytes();
-        int checksumIndex = rawNmea.indexOf("*");
-        //NMEA 星號後為checksum number
-        byte checksumCalcValue = 0;
-        int checksumValue;
 
-        //檢查開頭是否為$
-        if ((rawNmea.charAt(0) != '$') || (checksumIndex==-1)){
-            valid = false;
-        }
-        //
-        if (valid){
-            String val = rawNmea.substring(checksumIndex + 1, rawNmea.length()).trim();
-            checksumValue = Integer.parseInt(val, 16);
-            for (int i = 1; i < checksumIndex; i++){
-                checksumCalcValue = (byte) (checksumCalcValue ^ bytes[i]);
-            }
-            if (checksumValue != checksumCalcValue){
-                valid = false;
-            }
-        }
-        return valid;
+  private boolean isValidForNmea(String rawNmea) {
+    boolean valid = true;
+    byte[] bytes = rawNmea.getBytes();
+    int checksumIndex = rawNmea.indexOf("*");
+    //NMEA 星號後為checksum number
+    byte checksumCalcValue = 0;
+    int checksumValue;
+
+    //檢查開頭是否為$
+    if ((rawNmea.charAt(0) != '$') || (checksumIndex == -1)) {
+      valid = false;
     }
+    //
+    if (valid) {
+      String val = rawNmea.substring(checksumIndex + 1, rawNmea.length()).trim();
+      checksumValue = Integer.parseInt(val, 16);
+      for (int i = 1; i < checksumIndex; i++) {
+        checksumCalcValue = (byte) (checksumCalcValue ^ bytes[i]);
+      }
+      if (checksumValue != checksumCalcValue) {
+        valid = false;
+      }
+    }
+    return valid;
+  }
 
-
+  public static void verifyStoragePermissions(Activity activity) {
+    try {
+      //检测是否有写的权限
+      int permission = ActivityCompat.checkSelfPermission(activity,
+          "android.permission.WRITE_EXTERNAL_STORAGE");
+      if (permission != PackageManager.PERMISSION_GRANTED) {
+        // 没有写的权限，去申请写的权限，会弹出对话框
+        ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 }
