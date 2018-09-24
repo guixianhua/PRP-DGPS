@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                 //check nmea's checksum
                 if (isValidForNmea(nmea)){
                     nmeaProgress(nmea);
-                    Log.d("GPS-NMEA", nmea + "!!!");
+                    Log.d("GPS-NMEA", nmea);
                     db.insertNote(nmea);
                 }
 
