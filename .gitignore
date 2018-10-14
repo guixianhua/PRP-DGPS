@@ -2,6 +2,8 @@
 *.apk
 *.log
 *.db
+*.sqlite3
+*.pyc
 .gradle/*
 .idea/*
 /local.properties
@@ -12,4 +14,5 @@
 /build
 /captures
 .externalNativeBuild
+server/cloud/__pycache__/*
 
