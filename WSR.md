@@ -6,6 +6,7 @@
 #PRC National Day
 ```
 - week3 (9/25-10/1)
+1. Use django to setup server model
 - Week2 (9/18-9/24)
 ```
 1. Decode origin data and get location
