@@ -12,7 +12,9 @@ python3 manage.py makemigrations
 python3 manage.py migrate
 ```
 ## **Run Server**
-`python3 manage.py runserver ip:port`
+    `python3 manage.py runserver ip:port`
+Once you start the server, you can open its web UI by
+    `http://Active_Server_IP:Port`
 
 # Database Models
 ---------------------------------------------------------------------------------
