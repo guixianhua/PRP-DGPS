@@ -19,7 +19,7 @@ Once you start the server, you can open its web UI by
 # To Use
 ---------------------------------------------------------------------------------
 ## **Upload Data**
-    `http://Active_Server_IP:Port/upload/p1data_typep2datap3tim3`
+    `http://Active_Server_IP:Port/upload/data_type/data/time`
 
 # Database Models
 ---------------------------------------------------------------------------------
