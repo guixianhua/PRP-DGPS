@@ -16,6 +16,11 @@ python3 manage.py migrate
 Once you start the server, you can open its web UI by
     `http://Active_Server_IP:Port`
 
+# To Use
+---------------------------------------------------------------------------------
+## **Upload Data**
+    `http://Active_Server_IP:Port/upload/p1data_typep2datap3tim3`
+
 # Database Models
 ---------------------------------------------------------------------------------
 ## **DataDao**
