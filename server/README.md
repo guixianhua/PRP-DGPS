@@ -13,18 +13,18 @@ python3 manage.py migrate
 ```
 ## **Run Server**
 ```
-python3 manage.py runserver ip:port
+python3 manage.py runserver Active_Server_IP:Active_Server_Port
 ```
 Once you start the server, you can open its web UI by
 ```
-http://Active_Server_IP:Port
+http://Active_Server_IP:Active_Server_Port
 ```
 
 # To Use
 ---------------------------------------------------------------------------------
 ## **Upload Data**
 ```
-http://Active_Server_IP:Port/upload/data_type/data/time/
+http://Active_Server_IP:Active_Server_Port/upload/data_type/data/time/
 ```
 
 # Database Models
