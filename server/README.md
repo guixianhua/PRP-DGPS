@@ -1,5 +1,5 @@
 # PRP-DGPS Server
-- Database models
+- Database Models
 ```
 DataDao
 1. id
@@ -9,6 +9,11 @@ DataDao
 ```
 
 - To Run
+-- First Time
+```
+python3 manage.py makemigrations
+python3 manage.py migrate
+```
 ```
 python3 manage.py runserver ip:port
 ```
