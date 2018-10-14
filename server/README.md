@@ -26,6 +26,7 @@ http://Active_Server_IP:Active_Server_Port
 ```
 http://Active_Server_IP:Active_Server_Port/upload/data_type/data/time/
 ```
+## **Get Data**
 
 # Database Models
 ---------------------------------------------------------------------------------
