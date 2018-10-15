@@ -15,4 +15,5 @@
 /captures
 .externalNativeBuild
 server/cloud/__pycache__/*
+server/cloud/migrations/*
 
