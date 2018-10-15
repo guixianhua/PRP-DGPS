@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
+import json
+from django.core import serializers
 
 from cloud.models import Data
 # Create your views here.
@@ -22,12 +24,13 @@ def list(request):
   for data in data_list:
     data.create_time = data.create_time.strftime('%Y-%m-%d %H:%I:%S')
     data_list2.append(data)
-    print ('dataType: ' + data.data_type + ' data: ' + data.data + ' time: ' + data.create_time)
-
-  for data in data_list2:
-    print ('dataType: ' + data.data_type + ' data: ' + data.data + ' time: ' + data.create_time)
   # print (data_list)
   return render(request, 'cloud/list.html', context={
     'title': 'PRP-DGPS Server',
     'data_list': data_list2
   })
+
+def get(request):
+  data_list = Data.objects.all()
+  data_list_json = serializers.serialize("json", data_list)
+  return HttpResponse(data_list_json)
