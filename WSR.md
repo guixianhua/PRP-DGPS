@@ -1,7 +1,11 @@
 # Weekly Status Report
 
-## Yuwei's WSR
+## **Yuwei's WSR**
+- week6 (10/16-10/22)
 - week5 (10/9-10/15)
+```
+1. Setup upload and get URL
+```
 - week4 (10/2-10/8)
 ```
 #PRC National Day
