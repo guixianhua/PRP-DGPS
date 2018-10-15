@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <title>{{ title }}</title>
+</head>
+<body>
+<h1>Data List</h1>
+<table>
+	<thead>
+	    <tr>
+	    	<th nowrap="nowrap">Data Type</th>
+	    	<th width='100%'>Data</th>
+	    	<th nowrap="nowrap">Create Time</th>
+	    </tr>
+	</thead>
+	<tbody>
+		{% for data in data_list %}
+		<tr>
+    		<td nowrap="nowrap">{{ data.data_type }}</td>
+    		<td>{{ data.data }}</td>
+    		<td nowrap="nowrap">{{ data.create_time }}</td>
+  		</tr>
+  		{% endfor %}
+	</tbody>
+</table>
+</body>
+</html>

@@ -30,7 +30,7 @@ http://Active_Server_IP:Active_Server_Port/upload/data_type/data/time/
 
 # Database Models
 ---------------------------------------------------------------------------------
-## **DataDao**
+## **Data**
 ```
 1. id
 2. data_type
