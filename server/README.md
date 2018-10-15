@@ -27,6 +27,11 @@ http://Active_Server_IP:Active_Server_Port
 http://Active_Server_IP:Active_Server_Port/upload/data_type/data/time/
 ```
 ## **Get Data**
+* Get Variables
+```
+http://Active_Server_IP:Active_Server_Port/get
+```
+* Data List
 ```
 http://Active_Server_IP:Active_Server_Port/list
 ```
@@ -35,8 +40,7 @@ http://Active_Server_IP:Active_Server_Port/list
 ---------------------------------------------------------------------------------
 ## **Data**
 ```
-1. id
-2. data_type
-3. data
-4. create_time
+1. data_type
+2. data
+3. create_time
 ```
