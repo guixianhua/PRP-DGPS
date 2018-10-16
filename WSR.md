@@ -14,6 +14,7 @@
 ```
 1. Use django to setup server
 ```
+[PRP-DGPS Server](https://github.com/rum2mojito/PRP-DGPS/tree/master/server)
 - Week2 (9/18-9/24)
 ```
 1. Decode origin data and get location
