@@ -1,7 +1,12 @@
 # Weekly Status Report
 
 ## **Yuwei's WSR**
+- week7 (10/23-10/29)
 - week6 (10/16-10/22)
+```
+1. Add DataInfo Model
+2. Add "get" URL option in the app
+```
 - week5 (10/9-10/15)
 ```
 1. Setup upload and get URL
