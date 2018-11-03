@@ -2,6 +2,9 @@
 
 ## **Yuwei's WSR**
 - week7 (10/23-10/29)
+```
+NAN
+```
 - week6 (10/16-10/22)
 ```
 1. Add DataInfo Model
