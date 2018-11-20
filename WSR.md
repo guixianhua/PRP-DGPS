@@ -3,7 +3,7 @@
 ## **Yuwei's WSR**
 - week10 (11/13-11/19)
 ```
-1. Read papres and android API document
+1. Read papers and android API document
 ```
 - week9 (11/06-11/12)
 ```
